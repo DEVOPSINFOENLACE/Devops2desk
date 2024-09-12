@@ -45,8 +45,10 @@ height: 50%;
 
   .container2 {
     position : absolute;
-    top: 45%;
+    top: 35%;
     left : 55%;
+    width: 500px;
+    height: 300px;
     transform :
     
     translate(-50%,-40%); 

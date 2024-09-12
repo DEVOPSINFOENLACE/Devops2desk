@@ -1,4 +1,5 @@
 const express = require("express");
+const router = express.Router();
 
 const mysql = require("mysql");
 
@@ -17,9 +18,25 @@ app.set("view engine", "ejs");
 app.use(express.json());
 app.use(express.urlencoded({extended:false}));
 
-app.get("/", function(req,res){
-    res.render("colaboradores");
+app.get("/", function (req, res) {
+    res.render('registrocliente');
 });
+
+/*app.get("/", (req, res) => {
+    // Realiza la consulta y renderiza la vista con los resultados
+    conexion.query('SELECT * FROM colaboradores ', (error, results) => {
+        if (error) {
+            throw error;
+        } else {
+            res.render('tablacolaboradores', { results: results });
+        }
+    });
+});*/
+
+app.get("/registro", (req,res) => {
+    res.render('colaboradores');
+});
+
 
 app.post("/validar", function(req,res){
     const datos = req.body;
@@ -36,26 +53,17 @@ app.post("/validar", function(req,res){
    let valor = datos.valor;
    let photo = datos.foto;
 
-   let buscar = "SELECT * FROM colaboradores WHERE nombre = "+nombre+"";
+   let registrar = "INSERT INTO colaboradores (nombre, usuario, correo, cargo, contacto, acceso, contrasena, confirmar, checar, valor, foto) VALUE ('"+nombre +"','"+usuario +"','"+correo +"','"+carga +"','"+contacto +"','"+acceso +"','"+password +"','"+confirmar +"','"+checar +"','"+valor +"','"+photo +"')";
+                
+   conexion.query(registrar,function(error){
+       if(error){
+           throw error;
+       }else{
+          console.log("Datos almacenados correctamente"); 
+       }
+   });
 
-    conexion.query(buscar, function (error,row){
-        if(error){
-            throw error;
-        }else{
-            if(row.legth>0){
-                console.log("No se puede registrar, el usuario ya existe");
-            }else{
-                let registrar = "INSERT INTO colaboradores (nombre, usuario, correo, cargo, contacto, acceso, contrasena, confirmar, checar, valor, foto) VALUE ('"+nombre +"','"+usuario +"','"+correo +"','"+carga +"','"+contacto +"','"+acceso +"','"+password +"','"+confirmar +"','"+checar +"','"+valor +"','"+photo +"')";
-                conexion.query(registrar,function(error){
-                    if(error){
-                        throw error;
-                    }else{
-                       console.log("Datos almacenados correctamente"); 
-                    }
-                });
-            }
-        }
-    });
+    
 
 });
 
@@ -66,3 +74,4 @@ app.use('/resources', express.static("public"));
 app.listen(3000,function(){
     console.log("Servidor creado http://localhost:3000");
 });
+
