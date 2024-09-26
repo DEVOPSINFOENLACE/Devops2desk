@@ -20,9 +20,20 @@ app.set("view engine", "ejs");
 app.use(express.json());
 app.use(express.urlencoded({extended:false}));
 
-//Ver en online server
+//Inicia visualización del proyecto con "node index" en una terminal 
 app.get("/", function (req, res) {
-    res.render('inicio');
+    res.render('Inicio');
+});
+
+app.get("/Inicio", (req, res) => {
+    // Realiza la consulta y renderiza la vista con los resultados
+    conexion.query('SELECT * FROM colaboradores ', (error, results) => {
+        if (error) {
+            throw error;
+        } else {
+            res.render('inicio', { results: results });
+        }
+    });
 });
 
 app.get("/colab", (req, res) => {
@@ -36,7 +47,7 @@ app.get("/colab", (req, res) => {
     });
 });
 
-app.get("/cliente", (req, res) => {
+app.get("/clientes", (req, res) => {
     // Realiza la consulta y renderiza la vista con los resultados
     conexion.query('SELECT * FROM tabcliente ', (error, results) => {
         if (error) {
@@ -48,8 +59,13 @@ app.get("/cliente", (req, res) => {
 });
 
 app.get("/equipo", (req,res) => {
+    res.render('Equipos');
+});
+
+app.get("/resequipo", (req,res) => {
     res.render('RegistroEquipos');
 });
+
 
 app.get("/producto", (req,res) => {
     res.render('TablaProductos');
@@ -59,9 +75,17 @@ app.get("/servicio", (req,res) => {
     res.render('TablaServicios');
 });
 
-app.get("/tarea", (req,res) => {
-    res.render('RegistroTareas');
+app.get("/tarea", (req, res) => {
+    // Realiza la consulta y renderiza la vista con los resultados
+    conexion.query('SELECT DISTINCT colaboradores.nombre AS colaboradorNombre, tabcliente.nombre AS clienteNombre, tabcliente.codigoext AS clientecodigo FROM colaboradores, tabcliente ', (error, results) => {
+        if (error) {
+            throw error;
+        } else {
+            res.render('RegistroTareas', { results: results });
+        }
+    });
 });
+    
 
 app.get("/registro", (req,res) => {
     res.render('colaboradores');
@@ -72,7 +96,7 @@ app.get("/registrocliente", (req,res) => {
 });
 
 
-app.post("/validar", function(req,res){
+app.post("/validar", function(req,res){ // REGISTRO DE COLABORADOR
     const datos = req.body;
    // Corregir los nombres de las variables para que coincidan con el formulario
    let id_colab = datos.id_colab;
@@ -84,7 +108,6 @@ app.post("/validar", function(req,res){
    let acceso = datos.acceso;
    let password = datos.contrasena;
    let confirmar = datos.confirmar;
-   let checar = datos.checar;
    let valor = datos.valor;
    let photo = datos.foto;
 
@@ -102,8 +125,7 @@ app.post("/validar", function(req,res){
 
 });
 
-
-app.post("/aceptar", function(req,res){
+app.post("/aceptar", function(req,res){ //REGISTRO DE CLIENTE
     const client = req.body;
    // Corregir los nombres de las variables para que coincidan con el formulario
    let namecliente = client.namecliente;
@@ -137,7 +159,30 @@ app.post("/aceptar", function(req,res){
 
 });
 
+app.post("/aceptartarea", function(req,res){ //REGISTRO TAREA
+    const tarea = req.body;
+   // Corregir los nombres de las variables para que coincidan con el formulario
+   let id_tarea = tarea.id_tarea;
+   let cliente = tarea.cliente;
+   let colaborador = tarea.colaborador;
+   let fecha = tarea.fecha;
+   let hora = tarea.hora; // Cambié de 'carga' a 'cargo' para mejor comprensión.
+   let tipo = tarea.tipo;
+   let prioridad = tarea.prioridad;
+   let descripcion = tarea.descripcion;
+   
 
+   let registrar = "INSERT INTO tareas (id_tarea, cliente, colaborador, fecha, hora, tipo, prioridad, descripcion) VALUE ('"+id_tarea +"','"+cliente +"','"+colaborador +"','"+fecha +"','"+hora +"','"+tipo +"','"+prioridad +"','"+descripcion +"')";
+                
+   conexion.query(registrar,function(error){
+       if(error){
+           throw error;
+       }else{
+          console.log("Datos almacenados correctamente"); 
+          res.render('inicio', { results: results });
+       }
+   });
+});
 //ruta de archivos estáticos
 app.use('/resources', express.static("public"));
 
