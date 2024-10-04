@@ -1,9 +1,9 @@
 const express = require("express");;
 const path = require('path');
 const bcrypt = require('bcrypt');
-const mysql = require("mysql");
-
+const mysql = require("mysql");;
 const app = express();
+
 const connection = mysql.createConnection({
     host: 'localhost',     // Cambia esto por tu host (puede ser 'localhost' o un servidor remoto)
     user: 'root',          // Tu usuario de MySQL
@@ -28,8 +28,35 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Ruta para manejar el login
-app.get("/bb", (req, res) => {
+app.get("/", (req, res) => {
     res.render("Loggin");  // Redirige a la página de inicio
+});
+
+//Verificacion entre ejs loggin y BD
+app.post('/login', (req, res) => {
+    const { usuario, contrasena } = req.body;
+
+    // Consulta para verificar el usuario y la contraseña
+    const query = `SELECT * FROM colaboradores WHERE usuario = ? AND contrasena = ?`;
+
+    connection.query(query, [usuario, contrasena], (err, results) => {
+        if (err) {
+            console.error('Error al consultar la base de datos:', err);
+            return res.status(500).send('Error interno del servidor');
+        }
+        // Si se encuentra un colaborador, redirige a una nueva página
+        if (results.length > 0){
+            connection.query('SELECT DISTINCT colaboradores.nombre AS colaboradorNombre, tabcliente.nombre AS clienteNombre, tabcliente.codigoext AS clientecodigo FROM colaboradores, tabcliente ', (error, results) => {
+                if (error) {
+                    throw error;
+                } else {
+                    res.render('inicio', { results: results });
+                }
+            });
+        } else {
+            res.send('Usuario o contraseña incorrectos');
+        }
+    });
 });
 
 app.get("/sesion",(req, res) => {
@@ -73,17 +100,18 @@ connection.query(query, (error, results) => {
 });
 
 //Inicia visualización del proyecto con "node index" en una terminal 
-app.get('/', (req, res) => {
+app.get('/bb', (req, res) => {
     // Consulta para obtener todas las tareas 
-    connection.query('SELECT DISTINCT colaboradores.nombre AS colaboradorNombre, tabcliente.nombre AS clienteNombre, tabcliente.codigoext AS clientecodigo FROM colaboradores, tabcliente ', (error, results) => {
-        if (error) {
-            throw error;
-        } else {
-            res.render('inicio', { results: results });
-        }
-    });
+  // Realiza la consulta y renderiza la vista con los resultados
+  connection.query('SELECT DISTINCT colaboradores.nombre AS colaboradorNombre, tabcliente.nombre AS clienteNombre, tabcliente.codigoext AS clientecodigo FROM colaboradores, tabcliente ', (error, results) => {
+    if (error) {
+        throw error;
+    } else {
+        res.render('inicio', { results: results });
+    }
 });
-
+});
+/*jaaka*/
 app.get("/colab", (req, res) => {
     // Realiza la consulta y renderiza la vista con los resultados
     connection.query('SELECT * FROM colaboradores ', (error, results) => {
@@ -125,11 +153,11 @@ app.get("/servicio", (req,res) => {
 
 app.get("/tarea", (req, res) => {
     // Realiza la consulta y renderiza la vista con los resultados
-    connection.query('SELECT DISTINCT colaboradores.nombre AS colaboradorNombre, tabcliente.nombre AS clienteNombre, tabcliente.codigoext AS clientecodigo FROM colaboradores, tabcliente ', (error, results) => {
+    connection.query('SELECT * FROM tareas ', (error, results) => {
         if (error) {
             throw error;
         } else {
-            res.render('RegistroTareas', { results: results });
+            res.render('TablaTareas', { results: results });
         }
     });
 });
@@ -142,6 +170,20 @@ app.get("/registro", (req,res) => {
 app.get("/registrocliente", (req,res) => {
     res.render('registrocliente');
 });
+
+//Este codigo permite verificar el usario que vas a editar
+app.get('/editcliente/:nombre', (req,res) => {
+   const id =req.params.nombre;
+   conexion.query('SELECT * FROM tapcliente WHERE nombre=?',[id],(error,results)=>{
+    if(error){
+        throw error;
+    }else{
+        res.render('EditarCliente',{namecliente:results[0]});
+    }
+})
+    });
+
+
 
 
 app.post("/validar", function(req,res){ // REGISTRO DE COLABORADOR
@@ -176,6 +218,7 @@ app.post("/validar", function(req,res){ // REGISTRO DE COLABORADOR
 app.post("/aceptar", function(req,res){ //REGISTRO DE CLIENTE
     const client = req.body;
    // Corregir los nombres de las variables para que coincidan con el formulario
+   let id_cliente = client.id_cliente;
    let namecliente = client.namecliente;
    let identificacion = client.identificacion;
    let razon = client.razon;
@@ -193,7 +236,7 @@ app.post("/aceptar", function(req,res){ //REGISTRO DE CLIENTE
    let ciudad = client.ciudad;
    let estado = client.estado;
 
-   let registra = "INSERT INTO tabcliente (nombre, identificacion, razon, codigoext, telefonocorp, correocliente, cliente, responsable, observacion, postal, direccion, num_ext, num_int, region, ciudad, estado) VALUE ('"+namecliente +"','"+identificacion +"','"+razon +"','"+externo +"','"+telefono +"','"+correocorp +"','"+cliente +"','"+responsable +"','"+observacion +"','"+postal +"','"+direccion +"','"+numext +"','"+numint +"','"+region +"','"+ciudad +"','"+estado +"')";
+   let registra = "INSERT INTO tabcliente (Id_cliente, nombre, identificacion, razon, codigoext, telefonocorp, correocliente, cliente, responsable, observacion, postal, direccion, num_ext, num_int, region, ciudad, estado) VALUE ('"+id_cliente+"','"+namecliente +"','"+identificacion +"','"+razon +"','"+externo +"','"+telefono +"','"+correocorp +"','"+cliente +"','"+responsable +"','"+observacion +"','"+postal +"','"+direccion +"','"+numext +"','"+numint +"','"+region +"','"+ciudad +"','"+estado +"')";
                 
    connection.query(registra,function(error){
        if(error){
