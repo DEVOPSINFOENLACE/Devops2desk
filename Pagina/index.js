@@ -4,6 +4,8 @@ const bcrypt = require('bcrypt');
 const mysql = require("mysql");
 
 const app = express();
+
+
 const connection = mysql.createConnection({
     host: 'localhost',     // Cambia esto por tu host (puede ser 'localhost' o un servidor remoto)
     user: 'root',          // Tu usuario de MySQL
@@ -75,13 +77,14 @@ connection.query(query, (error, results) => {
 //Inicia visualización del proyecto con "node index" en una terminal 
 app.get('/', (req, res) => {
     // Consulta para obtener todas las tareas 
-    connection.query('SELECT DISTINCT colaboradores.nombre AS colaboradorNombre, tabcliente.nombre AS clienteNombre, tabcliente.codigoext AS clientecodigo FROM colaboradores, tabcliente ', (error, results) => {
-        if (error) {
-            throw error;
-        } else {
-            res.render('inicio', { results: results });
-        }
-    });
+  // Realiza la consulta y renderiza la vista con los resultados
+  connection.query('SELECT DISTINCT colaboradores.nombre AS colaboradorNombre, tabcliente.nombre AS clienteNombre, tabcliente.codigoext AS clientecodigo FROM colaboradores, tabcliente ', (error, results) => {
+    if (error) {
+        throw error;
+    } else {
+        res.render('inicio', { results: results });
+    }
+});
 });
 
 app.get("/colab", (req, res) => {
@@ -125,11 +128,11 @@ app.get("/servicio", (req,res) => {
 
 app.get("/tarea", (req, res) => {
     // Realiza la consulta y renderiza la vista con los resultados
-    connection.query('SELECT DISTINCT colaboradores.nombre AS colaboradorNombre, tabcliente.nombre AS clienteNombre, tabcliente.codigoext AS clientecodigo FROM colaboradores, tabcliente ', (error, results) => {
+    connection.query('SELECT * FROM tareas ', (error, results) => {
         if (error) {
             throw error;
         } else {
-            res.render('RegistroTareas', { results: results });
+            res.render('TablaTareas', { results: results });
         }
     });
 });
