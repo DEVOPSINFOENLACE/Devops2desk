@@ -171,7 +171,7 @@ app.get("/registrocliente", (req,res) => {
     res.render('registrocliente');
 });
 
-//Este codigo permite verificar el usario que vas a editar
+//Este codigo permite verificar el usuario que vas a editar
 app.get('/editcliente/:id_cliente', (req,res) => {
    const id =req.params.id_cliente;
    connection.query('SELECT * FROM tabcliente WHERE id_cliente=?',[id],(error,results)=>{
@@ -183,13 +183,26 @@ app.get('/editcliente/:id_cliente', (req,res) => {
 })
     });
 
+    //Permite editar los datos  del colaborador 
+    app.get('/editcola/:idcolaborador', (req,res) => {
+        const id =req.params.idcolaborador;
+        connection.query('SELECT * FROM colaboradores WHERE idcolaborador=?',[id],(error,results)=>{
+         if(error){
+             throw error;
+         }else{
+             res.render('EditarColaboradores',{colaborador:results[0]});
+         }
+     })
+         });
+
+         
 
 
 
 app.post("/validar", function(req,res){ // REGISTRO DE COLABORADOR
     const datos = req.body;
    // Corregir los nombres de las variables para que coincidan con el formulario
-   let id_colab = datos.id_colab;
+   let idcolaborador = datos.idcolaborador;
    let nombre = datos.nombre;
    let usuario = datos.usuario;
    let correo = datos.correo;
@@ -201,7 +214,7 @@ app.post("/validar", function(req,res){ // REGISTRO DE COLABORADOR
    let valor = datos.valor;
    let photo = datos.foto;
 
-   let registrar = "INSERT INTO colaboradores (id_colab, nombre, usuario, correo, cargo, contact, acceso, contrasena, confirmar, valor, foto) VALUE ('"+id_colab +"','"+nombre +"','"+usuario +"','"+correo +"','"+carga +"','"+contacto +"','"+acceso +"','"+password +"','"+confirmar +"','"+valor +"','"+photo +"')";
+   let registrar = "INSERT INTO colaboradores (idcolaborador, nombre, usuario, correo, cargo, contacto, acceso, contrasena, confirmar, valor, foto) VALUE ('"+idcolaborador +"','"+nombre +"','"+usuario +"','"+correo +"','"+carga +"','"+contacto +"','"+acceso +"','"+password +"','"+confirmar +"','"+valor +"','"+photo +"')";
                 
    connection.query(registrar,function(error){
        if(error){
@@ -212,6 +225,32 @@ app.post("/validar", function(req,res){ // REGISTRO DE COLABORADOR
    });
 
     
+
+});
+
+app.post("/updatec", function(req,res){ // REGISTRO DE COLABORADOR
+    const datos = req.body;
+   // Corregir los nombres de las variables para que coincidan con el formulario
+   let idcolaborador = datos.idcolaborador;
+   let nombre = datos.nombre;
+   let usuario = datos.usuario;
+   let correo = datos.correo;
+   let carga = datos.cargo; // Cambié de 'carga' a 'cargo' para mejor comprensión.
+   let contacto = datos.contacto;
+   let acceso = datos.acceso;
+   let password = datos.contrasena;
+   let confirmar = datos.confirmar;
+   let valor = datos.valor;
+   let photo = datos.foto;
+
+   
+   connection.query("UPDATE colaboradores  SET ? WHERE idcolaborador = ?",[{nombre:nombre, usuario:usuario, correo:correo, cargo:carga, contacto:contacto, acceso:acceso, contrasena:password, confirmar:confirmar, valor:valor, foto:photo}, idcolaborador],(error,results)=>{
+    if(error){
+        throw error;
+    }else{
+       console.log("Datos almacenados actualizado"); 
+    }
+});
 
 });
 
@@ -236,7 +275,7 @@ app.post("/aceptar", function(req,res){ //REGISTRO DE CLIENTE
    let ciudad = client.ciudad;
    let estado = client.estado;
 
-   let registra = "INSERT INTO tabcliente (id_cliente, nombre, identificacion, razon, codigoext, telefonocorp, correocliente, cliente, responsable, observacion, postal, direccion, num_ext, num_int, region, ciudad, estado) VALUE ('"+id_cliente+"','"+namecliente +"','"+identificacion +"','"+razon +"','"+externo +"','"+telefono +"','"+correocorp +"','"+cliente +"','"+responsable +"','"+observacion +"','"+postal +"','"+direccion +"','"+numext +"','"+numint +"','"+region +"','"+ciudad +"','"+estado +"')";
+   let registra = "UPDATE tabcliente  SET ? WHERE id_cliente = ? (id_cliente, nombre, identificacion, razon, codigoext, telefonocorp, correocliente, cliente, responsable, observacion, postal, direccion, num_ext, num_int, region, ciudad, estado) VALUE ('"+id_cliente+"','"+namecliente +"','"+identificacion +"','"+razon +"','"+externo +"','"+telefono +"','"+correocorp +"','"+cliente +"','"+responsable +"','"+observacion +"','"+postal +"','"+direccion +"','"+numext +"','"+numint +"','"+region +"','"+ciudad +"','"+estado +"')";
                 
    connection.query(registra,function(error){
        if(error){
@@ -247,6 +286,8 @@ app.post("/aceptar", function(req,res){ //REGISTRO DE CLIENTE
    });
 
 });
+
+
 
 app.post("/update", function(req,res){ //REGISTRO DE CLIENTE
     const client = req.body;
@@ -280,6 +321,8 @@ app.post("/update", function(req,res){ //REGISTRO DE CLIENTE
 
 });
 
+
+
 app.post("/aceptartarea", function(req,res){ //REGISTRO TAREA
     const tarea = req.body;
    // Corregir los nombres de las variables para que coincidan con el formulario
@@ -303,6 +346,11 @@ app.post("/aceptartarea", function(req,res){ //REGISTRO TAREA
        }
    });
 });
+
+
+
+
+
 //ruta de archivos estáticos
 app.use('/resources', express.static("public"));
 
