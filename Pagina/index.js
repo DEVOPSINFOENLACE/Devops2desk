@@ -318,8 +318,15 @@ app.post("/update", function(req,res){ //REGISTRO DE CLIENTE
           console.log("Datos almacenados actualizado"); 
        }
    });
-
+   connection.query('SELECT * FROM tabcliente ', (error, results) => {
+    if (error) {
+        throw error;
+    } else {
+        res.render('tablacliente', { results: results });
+    }
 });
+});
+
 
 
 
