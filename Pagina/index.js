@@ -275,7 +275,7 @@ app.post("/aceptar", function(req,res){ //REGISTRO DE CLIENTE
    let ciudad = client.ciudad;
    let estado = client.estado;
 
-   let registra = "UPDATE tabcliente  SET ? WHERE id_cliente = ? (id_cliente, nombre, identificacion, razon, codigoext, telefonocorp, correocliente, cliente, responsable, observacion, postal, direccion, num_ext, num_int, region, ciudad, estado) VALUE ('"+id_cliente+"','"+namecliente +"','"+identificacion +"','"+razon +"','"+externo +"','"+telefono +"','"+correocorp +"','"+cliente +"','"+responsable +"','"+observacion +"','"+postal +"','"+direccion +"','"+numext +"','"+numint +"','"+region +"','"+ciudad +"','"+estado +"')";
+   let registra = "INSERT INTO tabcliente (id_cliente, nombre, identificacion, razon, codigoext, telefonocorp, correocliente, cliente, responsable, observacion, postal, direccion, num_ext, num_int, region, ciudad, estado) VALUE ('"+id_cliente+"','"+namecliente +"','"+identificacion +"','"+razon +"','"+externo +"','"+telefono +"','"+correocorp +"','"+cliente +"','"+responsable +"','"+observacion +"','"+postal +"','"+direccion +"','"+numext +"','"+numint +"','"+region +"','"+ciudad +"','"+estado +"')";
                 
    connection.query(registra,function(error){
        if(error){
@@ -322,6 +322,43 @@ app.post("/update", function(req,res){ //REGISTRO DE CLIENTE
 });
 
 
+//ELIMINAR REGISTRO DE CLIENTE
+app.get("/delete/:id_cliente", function(req,res){ 
+    const id =req.params.id_cliente;
+    connection.query('DELETE FROM tabcliente WHERE id_cliente=?',[id],(error,results)=>{
+     if(error){
+         throw error;
+     }else{
+        connection.query('SELECT * FROM tabcliente ', (error, results) => {
+            if (error) {
+                throw error;
+            } else {
+                res.render('tablacliente', { results: results });
+            }
+        });
+     }
+ })
+     });
+
+     //ELIMINAR REGISTRO DE CLIENTE
+app.get("/delete/:idcolaborador", function(req,res){ 
+    const id =req.params.idcolaborador;
+    connection.query('DELETE FROM colaboradores WHERE idcolaborador=?',[id],(error,results)=>{
+     if(error){
+         throw error;
+     }else{
+        connection.query('SELECT * FROM colaboradores ', (error, results) => {
+            if (error) {
+                throw error;
+            } else {
+                res.render('tablacolaboradores', { results: results });
+            }
+        });
+     }
+ })
+     });
+
+
 
 app.post("/aceptartarea", function(req,res){ //REGISTRO TAREA
     const tarea = req.body;
@@ -355,5 +392,5 @@ app.post("/aceptartarea", function(req,res){ //REGISTRO TAREA
 app.use('/resources', express.static("public"));
 
 app.listen(3000,function(){
-    console.log("Servidor creado http://localhost:3000");
+    console.log("Servidor creado http://localhost:4000");
 });;
