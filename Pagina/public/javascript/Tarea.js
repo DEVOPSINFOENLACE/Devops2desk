@@ -1,14 +1,39 @@
-const connection = mysql.createConnection({
-    host: 'localhost',     // Cambia esto por tu host (puede ser 'localhost' o un servidor remoto)
-    user: 'root',          // Tu usuario de MySQL
-    password: '',          // La contraseña de tu usuario de MySQL
-    database: 'infoenlace' // El nombre de tu base de datos
-    });
+window.onload = function() {
+  const finalizarBtns = document.querySelectorAll('.finalizar-btn');
+  const reactivarbtns = document.querySelectorAll('.reactivar-btn')
 
-    let final = document.getElementById("finish");
-    let activo = document.getElementById("active");
-  final.onclick =function(){     //Funcion de boton 01
-    activo.innerHTML='Finalizado';
-    activo.style.color = "red";
-    //Vista reaccion a boton
-    }
+ 
+
+  finalizarBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const taskId = btn.getAttribute('data-id');
+      
+      // Enviar la solicitud POST para actualizar el estado
+      fetch('/finalizar-tarea', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id_tarea: taskId })
+      })
+    })
+  })
+
+  reactivarbtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const taskId = btn.getAttribute('data-id');
+      
+      // Enviar la solicitud POST para actualizar el estado
+      fetch('/reactivar-tarea', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id_tarea: taskId })
+      })
+    })
+  })
+
+}
+
+

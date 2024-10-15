@@ -6,21 +6,25 @@
 
     <title>Pagina de Equipos</title>
     <link rel="stylesheet" href="/resources/estilo/Equipos.css">
-    <link rel="stylesheet" href="/resources/estilo/Equipos.css">
 </head>
     <body>
         <header class="header" >
-            <ul>
-            <li><a href="/clientes" style="color:rgb(0, 187, 255)">CLIENTE</a></li>
-                <li> <a href="/colab" >COLABORADOR</a></h2></li>
-                <li> <a href="/ver-equipos">Equipo</a></h2></li>
-                <li> <a href="/producto">Producto</a></h2></li>
-                <li> <a href="/servicio">Servicio</a></h2></li>
-                <li> <a href="/tarea">Tarea</a></h2></ul></li>
+    <a href="/home"><img src="/resources/IMAGENES/LOGO.PNG"></a>
+    <ul>
+    <li><a href="/clientes">Cliente</a></li>
+    <li> <a href="/colab">Colaborador</a></h2></li>
+    <li> <a href="/ver-equipos">Equipo</a></h2></li>
+    <li> <a href="/producto">Producto</a></h2></li>
+    <li> <a href="/servicio">Servicio</a></h2></li>
+    <li> <a href="/tarea">Tarea</a></h2></li></ul>
+    
         </header>
         <section class="sidebar"></section>
         <main class="main">
             <div class="cuadro2" >
+                <div class="button-container">
+                    <a href="/resequipo"> <button class="card">Agregar</button></a>
+                </div>
                 <div class="tablew">
                     <table class="table" >
                         <thead>
@@ -29,6 +33,7 @@
                                 <th scope="col">Nombre</th>
                                 <th scope="col">indentificiacion</th>
                                 <th scope="col">Fecha</th>
+                                <th scope="col">Descripción</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -39,9 +44,10 @@
                                         <td scope="row" class="table-primary"><%= tablaequipos.Nombre %></td>
                                         <td scope="row" ><%= tablaequipos.Identificador %></td>
                                         <td scope="row" class="table-primary"><%= tablaequipos.Fecha %></td>
+                                        <td scope="row" class="table-primary"><%= tablaequipos.Descripcion %></td>
                                         <td>
-                                            <a href="/editcola/<%= tablaequipos.idcolaborador %>" class="btn btn-outline-info">editar</a>
-                                            <a href="/delete/<%= tablaequipos.idcolaborador %>" class="btn btn-outline-info">borrar</a>
+                                            <a href="/editequipo/<%= tablaequipos.IdEquipo %>" class="btn btn-outline-info">editar</a>
+                                            <a href="/deleteequipo/<%= tablaequipos.IdEquipo %>" class="btn btn-outline-info">borrar</a>
                                         </td>
                                     </tr>
                                     <% }) %>
@@ -53,8 +59,7 @@
                                     </tbody>
                                 </table>
                             </div>
-                        </main>
-        <button class="float" > <a href="/resequipo">Agregar</a>    
+                        </main>   
         </header>
         <section class="sidebar"> </section>
     </body>

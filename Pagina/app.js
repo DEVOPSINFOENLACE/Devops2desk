@@ -4,6 +4,10 @@ const bcrypt = require('bcryptjs');
 const mysql = require("mysql");;
 const app = express();
 const session = require('express-session');
+const res = require("express/lib/response");
+
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 app.use(session({
     secret: 'tu_clave_secreta',
@@ -60,7 +64,7 @@ app.post('/login', (req, res) => {
         // Si se encuentra un colaborador, redirige a una nueva página
         if (results.length > 0){
             req.session.usuario = results[0];
-            connection.query('SELECT DISTINCT colaboradores.nombre AS colaboradorNombre, tabcliente.nombre AS clienteNombre, tabcliente.codigoext AS clientecodigo FROM colaboradores, tabcliente ', (error, results) => {
+            connection.query('SELECT DISTINCT colaboradores.nombre AS colaboradorNombre, tabcliente.nombre AS clienteNombre, tabcliente.codigoext AS clientecodigo, tablaequipos.Nombre AS equipoNombre FROM colaboradores, tabcliente, tablaequipos  ', (error, results) => {
                 if (error) {
                     throw error;
                 } else {
@@ -160,9 +164,32 @@ app.get("/clientes", authMiddleware, (req, res) => {
     });
 });
 
-app.get("/ver-equipos", (req, res) => {
+app.get('/editequipo/:IdEquipo', authMiddleware, (req, res) => {
+    const id = req.params.IdEquipo;
+    
+    connection.query('SELECT * FROM tablaequipos WHERE IdEquipo=?', [id], (error, results) => {
+        if (error) {
+            throw error;
+        } else {
+            let equipo = results[0];
+            
+            // Verifica si existe el campo Fecha en el equipo
+            if (equipo.Fecha) {
+                // Convierte la fecha a formato YYYY-MM-DD si es necesario
+                let fecha = new Date(equipo.Fecha);
+                equipo.Fecha = fecha.toISOString().split('T')[0]; // Formato 'YYYY-MM-DD'
+            }
+
+            res.render('EditarEquipos', { equipo: equipo });
+        }
+    });
+});
+
+//VER TABLA DE EQUIPOS
+app.get("/ver-equipos",authMiddleware, (req, res) => {
     const query = 'SELECT * FROM tablaequipos'; // Nombre correcto de tu tabla
     connection.query(query, (err, results) => {
+        
         if (err) {
             console.error(err);
             return res.status(500).send('Error en la base de datos');
@@ -172,6 +199,10 @@ app.get("/ver-equipos", (req, res) => {
     });
 });
 
+app.get('/RegistroProductos', (req, res) => {
+    console.log('Ruta /RegistroProductos solicitada');
+    res.render('RegistroProductos');
+});
 
 app.get("/equipo", (req,res) => {
     res.render('Equipos');
@@ -312,13 +343,14 @@ app.post("/aceptar", function(req,res){ //REGISTRO DE CLIENTE
 
    let registra = "INSERT INTO tabcliente (id_cliente, nombre, identificacion, razon, codigoext, telefonocorp, correocliente, cliente, responsable, observacion, postal, direccion, num_ext, num_int, region, ciudad, estado) VALUE ('"+id_cliente+"','"+namecliente +"','"+identificacion +"','"+razon +"','"+externo +"','"+telefono +"','"+correocorp +"','"+cliente +"','"+responsable +"','"+observacion +"','"+postal +"','"+direccion +"','"+numext +"','"+numint +"','"+region +"','"+ciudad +"','"+estado +"')";
                 
-   connection.query(registra,function(error){
-       if(error){
-           throw error;
-       }else{
-          console.log("Datos almacenados correctamente"); 
-       }
-   });
+
+    connection.query(registra,function(error){
+        if(error){
+        throw error;
+        }else{
+        console.log("Datos almacenados correctamente"); 
+    }
+    });
 
 });
 
@@ -345,14 +377,15 @@ app.post("/update", function(req,res){ //UPDATE DE CLIENTE
     let region = client.region;
     let ciudad = client.ciudad;
     let estado = client.estado;
-               
-   connection.query("UPDATE tabcliente  SET ? WHERE id_cliente = ?",[{nombre:namecliente, identificacion:identificacion, razon:razon, codigoext:externo, telefonocorp:telefono, correocliente:correocorp, cliente:cliente, responsable:responsable, observacion:observacion, postal:postal, direccion:direccion, num_ext:numext, num_int:numint, region:region, ciudad:ciudad, estado:estado}, id_cliente],(error,results)=>{
-       if(error){
-           throw error;
-       }else{
-          console.log("Datos almacenados actualizado"); 
-       }
-   });
+        
+
+    connection.query("UPDATE tabcliente  SET ? WHERE id_cliente = ?",[{nombre:namecliente, identificacion:identificacion, razon:razon, codigoext:externo, telefonocorp:telefono, correocliente:correocorp, cliente:cliente, responsable:responsable, observacion:observacion, postal:postal, direccion:direccion, num_ext:numext, num_int:numint, region:region, ciudad:ciudad, estado:estado}, id_cliente],(error,results)=>{
+        if(error){
+        throw error;
+        }else{
+        console.log("Datos almacenados actualizado"); 
+        }
+    });
 
 });
 
@@ -361,9 +394,9 @@ app.post("/update", function(req,res){ //UPDATE DE CLIENTE
 app.get("/delete/:id_cliente", authMiddleware, function(req,res){ 
     const id =req.params.id_cliente;
     connection.query('DELETE FROM tabcliente WHERE id_cliente=?',[id],(error,results)=>{
-     if(error){
-         throw error;
-     }else{
+    if(error){
+        throw error;
+    }else{
         connection.query('SELECT * FROM tabcliente ', (error, results) => {
             if (error) {
                 throw error;
@@ -371,17 +404,17 @@ app.get("/delete/:id_cliente", authMiddleware, function(req,res){
                 res.render('tablacliente', { results: results });
             }
         });
-     }
- })
-     });
+    }
+    })
+    });
 
      //ELIMINAR REGISTRO DE CLIENTE
 app.get("/deletes/:idcolaborador",authMiddleware, function(req,res){ 
     const id =req.params.idcolaborador;
     connection.query('DELETE FROM colaboradores WHERE idcolaborador=?',[id],(error,results)=>{
-     if(error){
-         throw error;
-     }else{
+    if(error){
+        throw error;
+    }else{
         connection.query('SELECT * FROM colaboradores ', (error, results) => {
             if (error) {
                 throw error;
@@ -389,42 +422,157 @@ app.get("/deletes/:idcolaborador",authMiddleware, function(req,res){
                 res.render('tablacolaboradores', { results: results });
             }
         });
-     }
- })
-     });
+    }
+    })
+    });
 
+    app.post("/SaveEquipo", function(req,res){ //REGISTRO DE EQUIPOS
+        const equipo = req.body;
+       // Corregir los nombres de las variables para que coincidan con el formulario
+        let IdEquipo = equipo.IdEquipo;
+        let Nombre = equipo.Nombre;
+        let Identificador = equipo.Identificador;
+        let Fecha = equipo.Fecha;
+        let Describir = equipo.Describir;
+        let Asociar = equipo.Asociar;
+        let Atributo = equipo.Atributo
+        let valor = equipo.valor;
+        let Atributo_2 = equipo.Atributo_2;
+        let valor2 = equipo.valor2;
+        let Atributo_3 = equipo.Atributo_3;
+        let valor3 = equipo.valor3
+        let Atributo_extra = equipo.Atributo_extra;
+        let extra = equipo.extra
 
+        let registra = "INSERT INTO tablaequipos (IdEquipo, Nombre, Identificador, Fecha, Descripcion, Asociar, Atributo, valor, Atributo_2, valor2, Atributo_3, valor3, Atributo_extra, extra) VALUE ('"+IdEquipo+"','"+Nombre +"','"+Identificador +"','"+Fecha +"','"+Describir +"','"+Asociar +"','"+Atributo +"','"+valor +"','"+Atributo_2 +"','"+valor2 +"','"+Atributo_3 +"','"+valor3 +"','"+Atributo_extra +"','"+extra +"')";
+
+        connection.query(registra,function(error){
+            if(error){
+            throw error;
+            }else{
+            console.log("Datos almacenados correctamente"); 
+        }
+        });
+    });
+    
+        app.post("/updateequipo", function(req,res){ //UPDATE DE EQUIPOS
+            const equipo = req.body;
+            // Corregir los nombres de las variables para que coincidan con el formulario
+            let IdEquipo = equipo.IdEquipo;
+            let Nombre = equipo.Nombre;
+            let Identificador = equipo.Identificador;
+            let Fecha = equipo.Fecha;
+            let Describir = equipo.Describir;
+            let Asociar = equipo.Asociar;
+            let Atributo = equipo.Atributo
+            let valor = equipo.valor;
+            let Atributo_2 = equipo.Atributo_2;
+            let valor2 = equipo.valor2;
+            let Atributo_3 = equipo.Atributo_3;
+            let valor3 = equipo.valor3
+            let Atributo_extra = equipo.Atributo_extra;
+            let extra = equipo.extra
+                
+        
+            connection.query("UPDATE tablaequipos SET ? WHERE IdEquipo = ?",[{Nombre:Nombre, Identificador:Identificador, Fecha:Fecha, Descripcion:Describir, Asociar:Asociar, Atributo:Atributo, valor:valor, Atributo_2:Atributo_2, valor2:valor2, Atributo_3:Atributo_3, valor3:valor3, Atributo_extra:Atributo_extra,extra:extra}, IdEquipo],(error,results)=>{
+                if(error){
+                throw error;
+                }else{
+                    connection.query('SELECT * FROM tablaequipos ', (error, results) => {
+                        if (error) {
+                            throw error;
+                        } else {
+                            res.render('Equipos', { results: results });
+                        }
+                    });
+                }
+            });
+        
+        });
+        
+
+     //ELIMINAR REGISTRO DE Equipo
+    app.get("/deleteequipo/:IdEquipo",authMiddleware, function(req,res){ 
+        const id =req.params.IdEquipo;
+        connection.query('DELETE FROM tablaequipos WHERE IdEquipo=?',[id],(error,results)=>{
+        if(error){
+            throw error;
+        }else{
+            connection.query('SELECT * FROM tablaequipos ', (error, results) => {
+                if (error) {
+                    throw error;
+                } else {
+                    res.render('Equipos', { results: results });
+                }
+            });
+        }
+        })
+        });
 
 app.post("/aceptartarea",  function(req,res){ //REGISTRO TAREA
     const tarea = req.body;
    // Corregir los nombres de las variables para que coincidan con el formulario
-   let id_tarea = tarea.id_tarea;
-   let cliente = tarea.cliente;
-   let colaborador = tarea.colaborador;
-   let fecha = tarea.fecha;
-   let hora = tarea.hora; // Cambié de 'carga' a 'cargo' para mejor comprensión.
-   let tipo = tarea.tipo;
-   let prioridad = tarea.prioridad;
-   let descripcion = tarea.descripcion;
-   
+    let id_tarea = tarea.id_tarea;
+    let cliente = tarea.cliente;
+    let colaborador = tarea.colaborador;
+    let fecha = tarea.fecha;
+    let hora = tarea.hora; // Cambié de 'carga' a 'cargo' para mejor comprensión.
+    let tipo = tarea.tipo;
+    let prioridad = tarea.prioridad;
+    let descripcion = tarea.descripcion;
+    let activate = tarea.activo;
 
-   let registrar = "INSERT INTO tareas (id_tarea, cliente, colaborador, fecha, hora, tipo, prioridad, descripcion) VALUE ('"+id_tarea +"','"+cliente +"','"+colaborador +"','"+fecha +"','"+hora +"','"+tipo +"','"+prioridad +"','"+descripcion +"')";
+
+    let registrar = "INSERT INTO tareas (id_tarea, cliente, colaborador, fecha, hora, tipo, prioridad, descripcion, status) VALUE ('"+id_tarea +"','"+cliente +"','"+colaborador +"','"+fecha +"','"+hora +"','"+tipo +"','"+prioridad +"','"+descripcion +"','"+ activate +"')";
                 
-   connection.query(registrar,function(error){
-       if(error){
-           throw error;
-       }else{
-          console.log("Datos almacenados correctamente"); 
-       }
-   });
+    connection.query(registrar,function(error){
+    if(error){
+    throw error;
+    }else{
+    console.log("Datos almacenados correctamente"); 
+    }
+});
 });
 
+app.post('/finalizar-tarea', (req, res) => {
+    const { id_tarea } = req.body;
+
+    // Aquí actualizamos el estado de la tarea en la base de datos
+    const query = 'UPDATE tareas SET status = ? WHERE id_tarea = ?';
+    const values = ['FINALIZADO', id_tarea];  
+    connection.query(query, values, (error, results) => {
+        if (error) {
+        console.error(error);
+        return res.json({ success: false });
+    }
+      // Si la actualización fue exitosa
+    return res.json({ success: true });
+    });
+});
+
+app.post('/reactivar-tarea', (req, res) => {
+    const { id_tarea } = req.body;
+  
+    // Aquí actualizamos el estado de la tarea en la base de datos
+    const query = 'UPDATE tareas SET status = ? WHERE id_tarea = ?';
+    const values = ['ACTIVO', id_tarea];
+  
+    connection.query(query, values, (error, results) => {
+    if (error) {
+        console.error(error);
+        return res.json({ success: false });
+    }
+  
+      // Si la actualización fue exitosa
+    return res.json({ success: true });
+    });
+  });
+  
 //ruta de archivos estáticos
 app.use('/resources', express.static("public"));
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
 
 
