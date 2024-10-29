@@ -31,7 +31,17 @@ const calendar = document.querySelector(".calendar"),
     botonactivar.style.display='block';   //Vista reaccion a boton
   }
 
+// Abre el modal
+function openModal() {
+  document.getElementById('modal').style.display = 'block';
+  console.log('Modal abierto'); // Verifica que se abra correctamente
+}
 
+// Cierra el modal
+function closeModal() {
+  console.log('Cerrando modal'); // Verifica si se ejecuta esta línea
+  document.getElementById('modal').style.display = 'none';
+}
 
 let today = new Date();
 let activeDay;
@@ -263,7 +273,7 @@ function updateEvents(date) {
       year === event.year
     ) {
       event.events.forEach((event) => {
-        events += `<div class="event">
+        events += `<div class="event" onclick="openModal()">
             <div class="title">
               <i class="fas fa-circle"></i>
               <h3 class="event-title">${event.title}</h3>
@@ -275,6 +285,8 @@ function updateEvents(date) {
             
         </div>`;
       });
+
+
     }
   });
   if (events === "") {
@@ -402,6 +414,7 @@ addEventSubmit.addEventListener("click", () => {
 });
 
 //function to delete event when clicked on event
+/*
 eventsContainer.addEventListener("click", (e) => {
   if (e.target.classList.contains("event")) {
     if (confirm("Are you sure you want to delete this event?")) {
@@ -438,7 +451,7 @@ eventsContainer.addEventListener("click", (e) => {
     }
   }
 });
-
+*/
 
 //function to save events in local storage
 function saveEvents() {

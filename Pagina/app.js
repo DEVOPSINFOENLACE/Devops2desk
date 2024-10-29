@@ -273,6 +273,22 @@ app.get("/tarea",authMiddleware, (req, res) => {
     });
 });
     
+app.get('/tarea/:id', (req, res) => {
+    const tareaId = req.params.id;
+  
+    // Consulta SQL para obtener la tarea por su ID
+    const query = 'SELECT * FROM tareas WHERE id_tarea = ?';
+    connection.query(query, [tareaId], (err, results) => {
+      if (err) {
+        console.error('Error al obtener los datos de la tarea:', err);
+        res.status(500).send('Error al obtener los datos');
+      } else if (results.length > 0) {
+        res.json(results[0]); // Devuelve la primera tarea encontrada en formato JSON
+      } else {
+        res.status(404).send('Tarea no encontrada');
+      }
+    });
+  });
 
 app.get("/registro",authMiddleware, (req,res) => {
     res.render('colaboradores');
@@ -294,17 +310,36 @@ app.get('/editcliente/:id_cliente',authMiddleware, (req,res) => {
 })
     });
 
-    //Permite editar los datos  del colaborador 
-    app.get('/editcola/:idcolaborador', authMiddleware, (req,res) => {
-        const id =req.params.idcolaborador;
-        connection.query('SELECT * FROM colaboradores WHERE idcolaborador=?',[id],(error,results)=>{
-        if(error){
+// Permite editar los datos del colaborador basado en el nombre
+app.get('/editcola/nombre/:colaborador', authMiddleware, (req,res) => {
+    const nombreColaborador = req.params.colaborador;
+    connection.query('SELECT * FROM colaboradores WHERE nombre=?',[nombreColaborador],(error,results) => {
+        if(error) {
             throw error;
-        }else{
-            res.render('EditarColaboradores',{colaborador:results[0]});
+        } else {
+            res.render('EditarColaboradores', { colaborador: results[0] });
         }
-    })
-        });
+    });
+});
+
+app.get('/editidcol/id/:idcolaborador', authMiddleware, (req, res) => {
+    const idColaborador = parseInt(req.params.idcolaborador, 10);  // Verifica que sea un número
+    console.log('ID Colaborador:', idColaborador);  // Depura el valor
+    connection.query('SELECT * FROM colaboradores WHERE idcolaborador=?', [idColaborador], (error, results) => {
+        if (error) {
+            throw error;
+        } else {
+            console.log('Resultados de la consulta:', results);  // Verifica los resultados
+            if (results.length > 0) {
+                res.render('EditarColaboradores', { colaborador: results[0] });
+            } else {
+                res.status(404).send('Colaborador no encontrado');
+            }
+        }
+    });
+});
+
+
 
 app.post("/validar", function(req,res){ // REGISTRO DE COLABORADOR
     const datos = req.body;
@@ -330,9 +365,6 @@ app.post("/validar", function(req,res){ // REGISTRO DE COLABORADOR
         console.log("Datos almacenados correctamente"); 
         }
     });
-
-    
-
 });
 
 app.post("/updatec", function(req,res){ // REGISTRO DE COLABORADOR
@@ -364,25 +396,25 @@ app.post("/updatec", function(req,res){ // REGISTRO DE COLABORADOR
 app.post("/aceptar", function(req,res){ //REGISTRO DE CLIENTE
     const client = req.body;
    // Corregir los nombres de las variables para que coincidan con el formulario
-   let id_cliente = client.id_cliente;
-   let namecliente = client.namecliente;
-   let identificacion = client.identificacion;
-   let razon = client.razon;
+    let id_cliente = client.id_cliente;
+    let namecliente = client.namecliente;
+    let identificacion = client.identificacion;
+    let razon = client.razon;
    let externo = client.externo; // Cambié de 'carga' a 'cargo' para mejor comprensión.
-   let telefono = client.telefono;
-   let correocorp = client.correocorp;
-   let cliente = client.cliente;
-   let responsable = client.responsable;
-   let observacion = client.observacion;
-   let postal = client.postal;
-   let direccion = client.direccion;
-   let numext = client.numext;
-   let numint = client.numint;
-   let region = client.region;
-   let ciudad = client.ciudad;
-   let estado = client.estado;
+    let telefono = client.telefono;
+    let correocorp = client.correocorp;
+    let cliente = client.cliente;
+    let responsable = client.responsable;
+    let observacion = client.observacion;
+    let postal = client.postal;
+    let direccion = client.direccion;
+    let numext = client.numext;
+    let numint = client.numint;
+    let region = client.region;
+    let ciudad = client.ciudad;
+    let estado = client.estado;
 
-   let registra = "INSERT INTO tabcliente (id_cliente, nombre, identificacion, razon, codigoext, telefonocorp, correocliente, cliente, responsable, observacion, postal, direccion, num_ext, num_int, region, ciudad, estado) VALUE ('"+id_cliente+"','"+namecliente +"','"+identificacion +"','"+razon +"','"+externo +"','"+telefono +"','"+correocorp +"','"+cliente +"','"+responsable +"','"+observacion +"','"+postal +"','"+direccion +"','"+numext +"','"+numint +"','"+region +"','"+ciudad +"','"+estado +"')";
+    let registra = "INSERT INTO tabcliente (id_cliente, nombre, identificacion, razon, codigoext, telefonocorp, correocliente, cliente, responsable, observacion, postal, direccion, num_ext, num_int, region, ciudad, estado) VALUE ('"+id_cliente+"','"+namecliente +"','"+identificacion +"','"+razon +"','"+externo +"','"+telefono +"','"+correocorp +"','"+cliente +"','"+responsable +"','"+observacion +"','"+postal +"','"+direccion +"','"+numext +"','"+numint +"','"+region +"','"+ciudad +"','"+estado +"')";
                 
 
     connection.query(registra,function(error){
